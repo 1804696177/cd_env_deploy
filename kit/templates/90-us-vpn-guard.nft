@@ -1,0 +1,14 @@
+# Included INSIDE table inet fw4 by /etc/nftables.d/*.nft.
+chain us_vpn_forward_guard {
+    type filter hook forward priority -5; policy accept;
+    meta nfproto ipv6 counter drop comment "VPN: no forwarded IPv6"
+    oifname != { "__LAN_DEV__", "us-tun" } counter drop comment "VPN: no direct forwarding"
+}
+chain us_vpn_output_guard {
+    type filter hook output priority -5; policy accept;
+    meta nfproto ipv6 counter drop comment "VPN: no router IPv6"
+    oifname { "lo", "__LAN_DEV__", "us-tun" } accept
+    oifname "__WAN_DEV__" ip daddr __VPS_IPV4__ tcp dport 443 counter accept comment "VPN uplink"
+    oifname "__WAN_DEV__" udp sport 68 udp dport 67 counter accept comment "WAN DHCP"
+    counter drop comment "VPN: no other router egress"
+}

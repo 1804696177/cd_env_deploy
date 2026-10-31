@@ -1,0 +1,77 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "access": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "tun-in",
+      "protocol": "tun",
+      "settings": {
+        "name": "us-tun",
+        "mtu": 1400,
+        "gateway": [
+          "__TUN_CIDR__"
+        ],
+        "autoSystemRoutingTable": [
+          "0.0.0.0/1",
+          "128.0.0.0/1"
+        ],
+        "autoOutboundsInterface": "__WAN_DEV__"
+      }
+    },
+    {
+      "tag": "dns-in",
+      "listen": "127.0.0.1",
+      "port": 5353,
+      "protocol": "tunnel",
+      "settings": {
+        "address": "1.1.1.1",
+        "port": 53,
+        "network": "tcp,udp"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "us-vpn",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "__VPS_IPV4__",
+            "port": 443,
+            "users": [
+              {
+                "id": "__UUID__",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision-udp443"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "raw",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "__SNI__",
+          "fingerprint": "chrome",
+          "password": "__PUBLIC_KEY__",
+          "shortId": "__SHORT_ID__"
+        },
+        "sockopt": {
+          "interface": "__WAN_DEV__",
+          "tcpKeepAliveIdle": 60
+        }
+      }
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "connIdle": 300
+      }
+    }
+  }
+}
